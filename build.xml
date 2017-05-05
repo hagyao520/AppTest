@@ -1,0 +1,85 @@
+<project name="TestNGTest" default="publishReport" basedir=".">
+	<!-- Define <testng> task -->
+	<taskdef name="testng" classname="org.testng.TestNGAntTask">
+		<classpath>
+			<pathelement location="lib/testng-6.1.1.jar"/>
+		</classpath>
+	</taskdef>
+	<!--end define-->
+	
+	<!-- properties -->
+	<property name="run.classpath" value="bin" />
+    <property name="run.srcpath" value="src" />
+    <!--<property name="test.srcpath" value="test" />-->
+	<property name="all.srcpath" value="src" />
+    <property name="lib.dir" value="lib" />
+	<property name="tng.xml" value="build" />
+	<property name="tng.testngOutput" value="testngOutput" />
+	<property name="tng.publishdir" value="D:/Program/Tomcat/webapps/testngReport" />
+	<!--end-->
+	<!--<propertyset id="propertys1">
+		<propertyref name="tng.publishdir" />
+	</propertyset>-->
+	<!-- define jar  -->
+	<path id="path.lib">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+			<include name="D:/Program/Maven/Repositories/Maven/**/*.jar" />
+		</fileset>
+	</path>
+	<!-- path for testng -->
+	<path id="testng.classpath">
+		<path refid="path.lib" />
+		<pathelement location="${run.classpath}" />
+	</path>
+	<!-- end -->
+
+	<!-- target compile -->
+	<target name="init">
+		<!--delete old dir-->
+		<delete dir="${run.classpath}" />
+		<!--create new dir-->
+		<mkdir dir="${run.classpath}" />
+	</target>
+
+	<!-- target compile -->
+	<target name="compile" depends="init">
+		<javac srcdir="${run.srcpath}" destdir="${run.classpath}">
+			<classpath refid="path.lib" />
+		</javac>
+	</target>
+
+	<!-- target test -->
+	<target name="testng" depends="compile">
+		<!--<echo message="${tng.xml}[****testng xml folder****]" />-->
+		<testng outputdir="${tng.testngOutput}" classpathref="testng.classpath">
+			<!--<classfileset dir="${run.classpath}">
+				<include name="**/*Test*" />
+			</classfileset>-->
+				<xmlfileset dir="${tng.xml}" >
+				<include name="testng.xml" />
+			</xmlfileset>
+		</testng>
+	</target>
+
+	<target name="transform" depends="testng">
+        <xslt in="C:/Users/King-liu/.jenkins/workspace/AppTest/testngOutput/testng-results.xml"
+              style="C:/Users/King-liu/.jenkins/workspace/AppTest/testngOutput/testng-results.xsl"
+              out="C:/Users/King-liu/.jenkins/workspace/AppTest/testngOutput/indexDecorate.html">
+             <!-- you need to specify the directory here again -->
+            <param name="testNgXslt.outputDir"
+                   expression="C:/Users/King-liu/.jenkins/workspace/AppTest/testngOutput"/>
+            <classpath refid="path.lib"/>
+        </xslt>
+    </target>
+	
+	<!-- publish report -->
+	<target name="publishReport" depends="transform">
+		<!-- init the test report folder -->
+		<delete dir="${tng.publishdir}" />
+		<mkdir dir="${tng.publishdir}" />
+		<copy todir="${tng.publishdir}" >
+			<fileset dir="${tng.testngOutput}" includes="**/**" />
+		</copy>
+	</target>
+</project>
